@@ -295,6 +295,8 @@ public final class BuiltinModules {
          ModuleRegistry.register(new HitParticlesModule());
          ModuleRegistry.register(new ArmorTrimHiderModule());
          ModuleRegistry.register(new CustomGlintModule());
+         ModuleRegistry.register(new FakePayModule());
+         ModuleRegistry.register(new SpawnerProtectModule());
          ModuleRegistry.register(new RegionMapModule());
          ModuleRegistry.register(new PlayerArmorEspModule());
          ModuleRegistry.register(new FreeLookZoomModule());
