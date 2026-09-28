@@ -27,6 +27,9 @@ public final class SpawnerFinderModule extends Module {
 
    public SpawnerFinderModule() {
       super("spawner-finder", "Spawner Finder", ModuleCategory.RENDER, "Boxes monster spawners in loaded chunks and alerts you when a new one appears.");
+      // Riptide restores "enabled" from config without calling onEnable, so a hook
+      // installed only in onEnable never registers after a relaunch. Install it here.
+      installHook();
       this.add(new IntSetting("radius", "Chunk Radius", 8, 1, 16, 1).description("How many loaded chunks around you to search.").build());
       this.add(new IntSetting("delay", "Scan Delay", 20, 1, 200, 1).description("Ticks between scans (20 ticks = 1 second).").build());
       this.add(new BoolSetting("chat", "Chat Alert", true).group("Alerts").description("Print the coordinates when a new spawner is found.").build());

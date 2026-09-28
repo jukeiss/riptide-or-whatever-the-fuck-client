@@ -22,6 +22,9 @@ public final class JumpCirclesModule extends Module {
 
    public JumpCirclesModule() {
       super("jump-circles", "Jump Circles", ModuleCategory.RENDER, "Leaves a shockwave ring on the ground every time you land.");
+      // Riptide restores "enabled" from config without calling onEnable, so a hook
+      // installed only in onEnable never registers after a relaunch. Install it here.
+      installHook();
       this.add(new IntSetting("radius", "Radius", 170, 25, 500, 5).description("How wide the ring grows, in hundredths of a block (170 = 1.7 blocks).").build());
       this.add(new IntSetting("duration", "Duration", 900, 100, 3000, 50).description("How long a ring lasts, in milliseconds.").build());
       this.add(new IntSetting("air-ticks", "Min Air Ticks", 3, 1, 20, 1).description("How long you must be airborne before a landing counts.").build());

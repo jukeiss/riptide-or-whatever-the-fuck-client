@@ -25,6 +25,9 @@ public final class StatNametagsModule extends Module {
 
    public StatNametagsModule() {
       super("stat-nametags", "Stat Nametags", ModuleCategory.RENDER, "Shows a configurable stat panel above players.");
+      // Riptide restores "enabled" from config without calling onEnable, so a hook
+      // installed only in onEnable never registers after a relaunch. Install it here.
+      installHook();
       this.add(new IntSetting("range", "Range", 64, 8, 256, 4).description("How far away a player still gets a tag, in blocks.").build());
       this.add(new BoolSetting("self", "Show Self", true).description("Also draw the tag above your own head.").build());
       this.add(

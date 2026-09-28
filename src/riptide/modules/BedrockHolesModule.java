@@ -26,6 +26,9 @@ public final class BedrockHolesModule extends Module {
 
    public BedrockHolesModule() {
       super("bedrock-holes", "Bedrock Holes", ModuleCategory.RENDER, "Marks deepslate tucked under the bedrock layer, where people hide bases.");
+      // Riptide restores "enabled" from config without calling onEnable, so a hook
+      // installed only in onEnable never registers after a relaunch. Install it here.
+      installHook();
       this.add(new IntSetting("radius", "Chunk Radius", 6, 1, 16, 1).description("How many loaded chunks around you to scan.").build());
       this.add(new IntSetting("delay", "Scan Delay", 40, 5, 300, 5).description("Ticks between scan passes.").build());
       this.add(

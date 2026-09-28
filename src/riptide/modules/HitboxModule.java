@@ -22,6 +22,9 @@ public final class HitboxModule extends Module {
 
    public HitboxModule() {
       super("hitbox", "Hitbox", ModuleCategory.RENDER, "Draws the collision box outline of nearby entities.");
+      // Riptide restores "enabled" from config without calling onEnable, so a hook
+      // installed only in onEnable never registers after a relaunch. Install it here.
+      installHook();
       this.add(new BoolSetting("players", "Players", true).description("Outline players.").build());
       this.add(new BoolSetting("mobs", "Mobs", true).description("Outline mobs and other living entities.").build());
       this.add(

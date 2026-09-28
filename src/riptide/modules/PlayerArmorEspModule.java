@@ -24,6 +24,9 @@ public final class PlayerArmorEspModule extends Module {
 
    public PlayerArmorEspModule() {
       super("player-esp-plus", "PlayerESP+", ModuleCategory.RENDER, "Shows each player's name, armour, held item and stats above their head.");
+      // Riptide restores "enabled" from config without calling onEnable, so a hook
+      // installed only in onEnable never registers after a relaunch. Install it here.
+      installHook();
       this.add(new IntSetting("range", "Range", 64, 8, 256, 4).description("How far away a player still shows a panel, in blocks.").build());
       this.add(new BoolSetting("self", "Show Self", false).description("Also show your own panel (visible in F5).").build());
       this.add(new BoolSetting("name", "Show Name", true).description("Draw the player's name as the header line.").build());
@@ -32,6 +35,7 @@ public final class PlayerArmorEspModule extends Module {
       this.add(new BoolSetting("ping", "Show Ping", false).description("Add their tab-list latency.").build());
       this.add(new BoolSetting("held", "Show Held", true).description("Add the item they're holding.").build());
       this.add(new BoolSetting("empty", "Show Empty Slots", true).description("Draw a dash for missing armour pieces instead of skipping them.").build());
+      this.add(new BoolSetting("compact", "Compact Layout", true).description("Armour on top, then name, health and ping on one line. Off stacks one stat per line.").build());
       this.add(new BoolSetting("names", "Full Names", false).description("Off uses short tags (NTH, DIA). On spells the material out.").build());
       this.add(new IntSetting("scale", "Scale", 100, 40, 300, 5).description("Size of the panel, as a percent.").build());
       this.add(new IntSetting("height", "Height Above", 55, 0, 300, 5).description("How far above the head it sits, in hundredths of a block.").build());
@@ -171,42 +175,83 @@ public final class PlayerArmorEspModule extends Module {
                for (Player var20 : MC.level.players()) {
                   if (var20 != null && var20.isAlive() && (var20 != MC.player || var7) && !(var20.distanceToSqr(MC.player) > var5)) {
                      ArrayList var21 = new ArrayList();
-                     if (var1.bool("name")) {
-                        var21.add(Component.literal(var20.getGameProfile().name()).withColor(var16));
-                     }
-
-                     if (var1.bool("health")) {
-                        var21.add(healthLine(var20, var17));
-                     }
-
-                     if (var1.bool("distance") || var1.bool("ping")) {
-                        StringBuilder var22 = new StringBuilder();
-                        if (var1.bool("distance")) {
-                           var22.append((int)Math.sqrt(var20.distanceToSqr(MC.player))).append('m');
+                     if (var1.bool("compact")) {
+                        // Classic PvP tag: armour row on top, then name / health / ping on one line.
+                        Component var40 = var1.armorLine(var20);
+                        if (var40 != null) {
+                           var21.add(var40);
                         }
 
-                        String var23 = var1.bool("ping") ? var1.ping(var20) : null;
-                        if (var23 != null) {
-                           if (var22.length() > 0) {
-                              var22.append("  ");
+                        MutableComponent var41 = Component.empty();
+                        boolean var42 = false;
+                        if (var1.bool("name")) {
+                           var41.append(Component.literal(var20.getGameProfile().name()).withColor(var16));
+                           var42 = true;
+                        }
+
+                        if (var1.bool("health")) {
+                           var41.append(Component.literal(var42 ? " " : "")).append(healthLine(var20, var17));
+                           var42 = true;
+                        }
+
+                        String var43 = var1.bool("ping") ? var1.ping(var20) : null;
+                        if (var43 != null) {
+                           var41.append(Component.literal((var42 ? " " : "") + var43).withColor(var17));
+                           var42 = true;
+                        }
+
+                        if (var1.bool("distance")) {
+                           var41.append(Component.literal((var42 ? " " : "") + (int)Math.sqrt(var20.distanceToSqr(MC.player)) + "m").withColor(var17));
+                           var42 = true;
+                        }
+
+                        if (var42) {
+                           var21.add(var41);
+                        }
+
+                        ItemStack var44 = var20.getMainHandItem();
+                        if (var8 && !var44.isEmpty()) {
+                           var21.add(Component.literal(var44.getHoverName().getString()).withColor(var15));
+                        }
+                     } else {
+                        // Stacked layout: one line per stat, armour under them.
+                        if (var1.bool("name")) {
+                           var21.add(Component.literal(var20.getGameProfile().name()).withColor(var16));
+                        }
+
+                        if (var1.bool("health")) {
+                           var21.add(healthLine(var20, var17));
+                        }
+
+                        if (var1.bool("distance") || var1.bool("ping")) {
+                           StringBuilder var22 = new StringBuilder();
+                           if (var1.bool("distance")) {
+                              var22.append((int)Math.sqrt(var20.distanceToSqr(MC.player))).append('m');
                            }
 
-                           var22.append(var23);
+                           String var23 = var1.bool("ping") ? var1.ping(var20) : null;
+                           if (var23 != null) {
+                              if (var22.length() > 0) {
+                                 var22.append("  ");
+                              }
+
+                              var22.append(var23);
+                           }
+
+                           if (var22.length() > 0) {
+                              var21.add(Component.literal(var22.toString()).withColor(var17));
+                           }
                         }
 
-                        if (var22.length() > 0) {
-                           var21.add(Component.literal(var22.toString()).withColor(var17));
+                        Component var28 = var1.armorLine(var20);
+                        if (var28 != null) {
+                           var21.add(var28);
                         }
-                     }
 
-                     Component var28 = var1.armorLine(var20);
-                     if (var28 != null) {
-                        var21.add(var28);
-                     }
-
-                     ItemStack var29 = var20.getMainHandItem();
-                     if (var8 && !var29.isEmpty()) {
-                        var21.add(Component.literal(var29.getHoverName().getString()).withColor(var15));
+                        ItemStack var29 = var20.getMainHandItem();
+                        if (var8 && !var29.isEmpty()) {
+                           var21.add(Component.literal(var29.getHoverName().getString()).withColor(var15));
+                        }
                      }
 
                      if (!var21.isEmpty()) {

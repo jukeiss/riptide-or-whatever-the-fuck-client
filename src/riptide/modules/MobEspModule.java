@@ -28,6 +28,9 @@ public final class MobEspModule extends Module {
 
    public MobEspModule() {
       super("mob-esp", "Mob ESP", ModuleCategory.RENDER, "Boxes and tracers mobs, with a name-and-health label.");
+      // Riptide restores "enabled" from config without calling onEnable, so a hook
+      // installed only in onEnable never registers after a relaunch. Install it here.
+      installHook();
       this.add(
          new ChoiceSetting("mode", "Show", "All", "All", "Hostile", "Passive")
             .description("Which mobs to draw. Players are never included (use PlayerESP+ for those).")

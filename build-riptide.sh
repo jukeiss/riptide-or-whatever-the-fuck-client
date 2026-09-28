@@ -86,6 +86,15 @@ echo "==> compiling modules + util"
   "$SRC"/riptide/modules/CustomGlintModule.java \
   "$SRC"/riptide/modules/FakePayModule.java \
   "$SRC"/riptide/modules/HitParticlesModule.java \
+  "$SRC"/riptide/modules/RegionMapModule.java \
+  "$SRC"/riptide/modules/LootEspModule.java \
+  "$SRC"/riptide/modules/MobEspModule.java \
+  "$SRC"/riptide/modules/HitboxModule.java \
+  "$SRC"/riptide/modules/SpawnerFinderModule.java \
+  "$SRC"/riptide/modules/StatNametagsModule.java \
+  "$SRC"/riptide/modules/SpawnerNametagsModule.java \
+  "$SRC"/riptide/modules/BedrockHolesModule.java \
+  "$SRC"/riptide/modules/JumpCirclesModule.java \
   "$SRC"/riptide/modules/GoldenLeverModule.java \
   "$SRC"/riptide/modules/HudDuplicate.java \
   "$SRC"/riptide/modules/HudStack.java \

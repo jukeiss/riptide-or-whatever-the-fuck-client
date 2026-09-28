@@ -24,6 +24,9 @@ public final class SpawnerNametagsModule extends Module {
 
    public SpawnerNametagsModule() {
       super("spawner-nametags", "Spawner Nametags", ModuleCategory.RENDER, "Shows which mob each nearby spawner spawns.");
+      // Riptide restores "enabled" from config without calling onEnable, so a hook
+      // installed only in onEnable never registers after a relaunch. Install it here.
+      installHook();
       this.add(new IntSetting("range", "Range", 128, 16, 256, 8).description("How far away a spawner still gets a label, in blocks.").build());
       this.add(new IntSetting("refresh", "Refresh", 20, 5, 200, 5).description("Ticks between label rebuilds.").build());
       this.add(new BoolSetting("distance", "Show Distance", true).description("Add how many blocks away the spawner is.").build());
