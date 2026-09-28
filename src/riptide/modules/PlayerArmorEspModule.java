@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents.Colle
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -78,7 +79,7 @@ public final class PlayerArmorEspModule extends Module {
 
    private static PlayerArmorEspModule instance() {
       PlayerArmorEspModule var0 = cached;
-      if (var0 == null && ModuleRegistry.get("player-armor") instanceof PlayerArmorEspModule var1) {
+      if (var0 == null && ModuleRegistry.get("player-esp-plus") instanceof PlayerArmorEspModule var1) {
          var0 = var1;
          cached = var1;
       }
@@ -159,12 +160,13 @@ public final class PlayerArmorEspModule extends Module {
                boolean var8 = var1.bool("held");
                float var9 = var1.integer("scale") / 100.0F;
                double var10 = var1.integer("height") / 100.0;
-               double var12 = 0.32;
+               double var12 = 0.32 * var9;
                int var14 = var1.integer("bg-alpha") << 24;
                int var15 = ModuleRenderUtil.color(var1, "c-held", -1) & 16777215;
                int var16 = ModuleRenderUtil.color(var1, "c-name", -1) & 16777215;
                int var17 = ModuleRenderUtil.color(var1, "c-stats", -4602154) & 16777215;
                PoseStack var18 = var0.poseStack();
+               float var30 = MC.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 
                for (Player var20 : MC.level.players()) {
                   if (var20 != null && var20.isAlive() && (var20 != MC.player || var7) && !(var20.distanceToSqr(MC.player) > var5)) {
@@ -208,10 +210,13 @@ public final class PlayerArmorEspModule extends Module {
                      }
 
                      if (!var21.isEmpty()) {
-                        double var24 = var20.getBoundingBox().maxY + var10 + var12 * (var21.size() - 1);
+                        // Interpolate like the other ESP renderers so the panel doesn't trail moving players.
+                        double var31 = Mth.lerp(var30, var20.xOld, var20.getX());
+                        double var33 = Mth.lerp(var30, var20.zOld, var20.getZ());
+                        double var24 = Mth.lerp(var30, var20.yOld, var20.getY()) + var20.getBbHeight() + var10 + var12 * (var21.size() - 1);
 
                         for (int var26 = 0; var26 < var21.size(); var26++) {
-                           drawLine(var0, var18, var20, var2, var24 - var12 * var26, var9, var14, (Component)var21.get(var26));
+                           drawLine(var0, var18, var31, var33, var2, var24 - var12 * var26, var9, var14, (Component)var21.get(var26));
                         }
                      }
                   }
@@ -222,9 +227,9 @@ public final class PlayerArmorEspModule extends Module {
       }
    }
 
-   private static void drawLine(LevelRenderContext var0, PoseStack var1, Player var2, Vec3 var3, double var4, float var6, int var7, Component var8) {
+   private static void drawLine(LevelRenderContext var0, PoseStack var1, double var2, double var9, Vec3 var3, double var4, float var6, int var7, Component var8) {
       var1.pushPose();
-      var1.translate(var2.getX() - var3.x, var4 - var3.y, var2.getZ() - var3.z);
+      var1.translate(var2 - var3.x, var4 - var3.y, var9 - var3.z);
       if (var6 != 1.0F) {
          var1.scale(var6, var6, var6);
       }

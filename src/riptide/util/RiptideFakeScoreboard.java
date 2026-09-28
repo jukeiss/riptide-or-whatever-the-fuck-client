@@ -74,8 +74,9 @@ public final class RiptideFakeScoreboard {
             int var19 = var6 + 6 + 4;
             int var20 = var5.size() * 10 + 6;
             byte var9 = 16;
-            int var10 = RiptideUiScale.getVirtualScreenWidth();
-            int var11 = RiptideUiScale.getVirtualScreenHeight();
+            // Vanilla HUD space, not RiptideUiScale's fixed-scale space: those only match at GUI scale 2.
+            int var10 = var0.guiWidth();
+            int var11 = var0.guiHeight();
             boolean var12 = "Left".equals(var1.value("side"));
             int var13 = var12 ? 3 : var10 - var19 - 3;
             int var14 = Math.max(0, var11 / 2 - (var20 + var9) / 2 + parseOffset(var1));
