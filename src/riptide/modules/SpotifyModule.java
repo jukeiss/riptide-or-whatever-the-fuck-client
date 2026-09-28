@@ -87,6 +87,16 @@ public final class SpotifyModule extends Module {
       } catch (Throwable var3) {
       }
 
+      try {
+         // An empty card usually means macOS refused the Apple event, so say so
+         // here rather than leaving the user staring at nothing.
+         String var4 = RiptideSpotify.lastError();
+         if (var4 != null && !var4.isBlank()) {
+            return var4;
+         }
+      } catch (Throwable var5) {
+      }
+
       return null;
    }
 
