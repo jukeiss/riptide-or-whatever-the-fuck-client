@@ -24,7 +24,7 @@ public final class SoundRadarModule extends Module {
    public SoundRadarModule() {
       super("sound-radar", "Sound Radar", ModuleCategory.RENDER, "Plots where recent sounds came from, relative to the way you are facing.");
       this.add(
-         new ChoiceSetting("corner", "Corner", "Bottom Left", "Top Left", "Top Right", "Bottom Left", "Bottom Right")
+         new ChoiceSetting("corner", "Corner", "Bottom Right", "Top Left", "Top Right", "Bottom Left", "Bottom Right")
             .description("Which corner the radar sits in.")
             .group("Display")
             .build()
