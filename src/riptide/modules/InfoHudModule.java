@@ -33,6 +33,7 @@ public final class InfoHudModule extends Module {
             .build()
       );
       this.add(new IntSetting("margin", "Margin", 4, 0, 200, 1).description("Gap from the screen edge, in pixels.").build());
+      this.add(new BoolSetting("hide-dup", "Hide When Duplicated", true).description("Hide any line the draggable HUD elements already show.").build());
       this.add(new ColorSetting("c-bg", "Background", -1879048192).group("Colors").description("Panel backing. 0 alpha removes it.").build());
       this.add(new ColorSetting("c-text", "Text", -1).group("Colors").build());
    }
@@ -61,16 +62,16 @@ public final class InfoHudModule extends Module {
 
    private void draw(GuiGraphicsExtractor var1) {
       ArrayList var2 = new ArrayList(5);
-      if (this.bool("fps")) {
+      if (this.bool("fps") && !this.dup("fps")) {
          var2.add("FPS: " + MC.getFps());
       }
 
-      if (this.bool("coords")) {
+      if (this.bool("coords") && !this.dup("coordinates")) {
          BlockPos var3 = MC.player.blockPosition();
          var2.add("XYZ: " + var3.getX() + " " + var3.getY() + " " + var3.getZ());
       }
 
-      if (this.bool("direction")) {
+      if (this.bool("direction") && !this.dup("rotation")) {
          float var20 = MC.player.getYRot() % 360.0F;
          if (var20 < 0.0F) {
             var20 += 360.0F;
@@ -79,32 +80,32 @@ public final class InfoHudModule extends Module {
          var2.add("Facing: " + DIRS[Math.round(var20 / 45.0F) & 7]);
       }
 
-      if (this.bool("speed")) {
+      if (this.bool("speed") && !this.dup("speed")) {
          double var21 = MC.player.getX() - MC.player.xOld;
          double var5 = MC.player.getZ() - MC.player.zOld;
          double var7 = Math.sqrt(var21 * var21 + var5 * var5) * 20.0;
          var2.add(String.format("Speed: %.1f b/s", var7));
       }
 
-      if (this.bool("biome")) {
+      if (this.bool("biome") && !this.dup("biome")) {
          String var22 = biomeName();
          if (!var22.isEmpty()) {
             var2.add("Biome: " + var22);
          }
       }
 
-      if (this.bool("ping")) {
+      if (this.bool("ping") && !this.dup("ping")) {
          int var23 = ownPing();
          if (var23 >= 0) {
             var2.add("Ping: " + var23 + "ms");
          }
       }
 
-      if (this.bool("day")) {
+      if (this.bool("day") && !this.dup("world_time")) {
          var2.add("Day: " + MC.level.getGameTime() / 24000L);
       }
 
-      if (this.bool("clock")) {
+      if (this.bool("clock") && !this.dup("real_time")) {
          var2.add("Time: " + LocalTime.now().withNano(0).toString());
       }
 
@@ -139,6 +140,11 @@ public final class InfoHudModule extends Module {
             var17 += var25;
          }
       }
+   }
+
+   /** True when the draggable HUD element of this id already shows the same line. */
+   private boolean dup(String elementId) {
+      return this.bool("hide-dup") && HudDuplicate.shows(elementId);
    }
 
    private static int ownPing() {

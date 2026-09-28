@@ -20,6 +20,7 @@ public final class ArrayListHudModule extends Module {
             .build()
       );
       this.add(new IntSetting("margin", "Margin", 2, 0, 200, 1).description("Gap from the screen edge, in pixels.").build());
+      this.add(new BoolSetting("hide-dup", "Hide When Duplicated", true).description("Stay hidden while the draggable Active Modules HUD element is already showing this.").build());
       this.add(new BoolSetting("rainbow", "Rainbow Tabs", true).description("Fade the side tab through a rainbow down the list.").build());
       this.add(new BoolSetting("hide-self", "Hide This", true).description("Don't list the Active Modules module itself.").build());
       this.add(new ColorSetting("c-text", "Text", -1).group("Colors").build());
@@ -39,7 +40,7 @@ public final class ArrayListHudModule extends Module {
 
    public static void render(GuiGraphicsExtractor var0) {
       ArrayListHudModule var1 = instance();
-      if (var1 != null && var1.isEnabled() && !PackHideState.isActive()) {
+      if (var1 != null && var1.isEnabled() && !PackHideState.isActive() && !HudDuplicate.suppresses(var1, "active_modules")) {
          if (MC != null && MC.player != null && !MC.gui.hud.isHidden()) {
             try {
                var1.draw(var0);

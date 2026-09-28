@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import riptide.api.module.ChoiceSetting;
 import riptide.api.module.ColorSetting;
 import riptide.api.module.IntSetting;
+import riptide.api.module.BoolSetting;
 
 public final class KeystrokesHudModule extends Module {
    private static KeystrokesHudModule cached;
@@ -19,6 +20,7 @@ public final class KeystrokesHudModule extends Module {
             .build()
       );
       this.add(new IntSetting("margin", "Margin", 6, 0, 300, 1).description("Gap from the screen edge, in pixels.").build());
+      this.add(new BoolSetting("hide-dup", "Hide When Duplicated", true).description("Stay hidden while the draggable Keystrokes HUD element is already showing this.").build());
       this.add(new IntSetting("size", "Key Size", 20, 12, 40, 1).description("Size of one key box, in pixels.").build());
       this.add(new ColorSetting("c-idle", "Idle", -1877994472).group("Colors").description("Box color when a key is up.").build());
       this.add(new ColorSetting("c-press", "Pressed", -263548673).group("Colors").description("Box color when a key is held.").build());
@@ -38,7 +40,7 @@ public final class KeystrokesHudModule extends Module {
 
    public static void render(GuiGraphicsExtractor var0) {
       KeystrokesHudModule var1 = instance();
-      if (var1 != null && var1.isEnabled() && !PackHideState.isActive()) {
+      if (var1 != null && var1.isEnabled() && !PackHideState.isActive() && !HudDuplicate.suppresses(var1, "keystrokes")) {
          if (MC != null && MC.player != null && MC.options != null && !MC.gui.hud.isHidden()) {
             try {
                var1.draw(var0);

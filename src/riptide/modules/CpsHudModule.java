@@ -8,6 +8,7 @@ import org.lwjgl.glfw.GLFW;
 import riptide.api.module.ChoiceSetting;
 import riptide.api.module.ColorSetting;
 import riptide.api.module.IntSetting;
+import riptide.api.module.BoolSetting;
 
 public final class CpsHudModule extends Module {
    private static CpsHudModule cached;
@@ -24,6 +25,7 @@ public final class CpsHudModule extends Module {
             .build()
       );
       this.add(new IntSetting("margin", "Margin", 6, 0, 300, 1).description("Gap from the screen edge, in pixels.").build());
+      this.add(new BoolSetting("hide-dup", "Hide When Duplicated", true).description("Stay hidden while the draggable CPS HUD element is already showing this.").build());
       this.add(new ColorSetting("c-bg", "Background", -1879048192).group("Colors").description("Panel backing. 0 alpha removes it.").build());
       this.add(new ColorSetting("c-text", "Text", -1).group("Colors").build());
    }
@@ -40,7 +42,7 @@ public final class CpsHudModule extends Module {
 
    public static void render(GuiGraphicsExtractor var0) {
       CpsHudModule var1 = instance();
-      if (var1 != null && var1.isEnabled() && !PackHideState.isActive()) {
+      if (var1 != null && var1.isEnabled() && !PackHideState.isActive() && !HudDuplicate.suppresses(var1, "cps")) {
          if (MC != null && MC.getWindow() != null && !MC.gui.hud.isHidden()) {
             try {
                var1.sample();

@@ -25,6 +25,7 @@ public final class ArmorHudModule extends Module {
             .build()
       );
       this.add(new IntSetting("margin", "Margin", 4, 0, 300, 1).description("Gap from the screen edge, in pixels.").build());
+      this.add(new BoolSetting("hide-dup", "Hide When Duplicated", true).description("Stay hidden while the draggable Armor HUD element is already showing this.").build());
       this.add(new BoolSetting("hands", "Include Hands", true).description("Also list your main-hand and off-hand items.").build());
       this.add(new BoolSetting("percent", "As Percent", true).description("Durability as a percentage instead of raw remaining.").build());
       this.add(new ColorSetting("c-bg", "Background", -1879048192).group("Colors").description("Panel backing. 0 alpha removes it.").build());
@@ -44,7 +45,7 @@ public final class ArmorHudModule extends Module {
 
    public static void render(GuiGraphicsExtractor var0) {
       ArmorHudModule var1 = instance();
-      if (var1 != null && var1.isEnabled() && !PackHideState.isActive()) {
+      if (var1 != null && var1.isEnabled() && !PackHideState.isActive() && !HudDuplicate.suppresses(var1, "armor")) {
          if (MC != null && MC.player != null && !MC.gui.hud.isHidden()) {
             try {
                var1.draw(var0);

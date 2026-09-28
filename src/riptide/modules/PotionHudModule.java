@@ -22,6 +22,7 @@ public final class PotionHudModule extends Module {
             .build()
       );
       this.add(new IntSetting("margin", "Margin", 4, 0, 300, 1).description("Gap from the screen edge, in pixels.").build());
+      this.add(new BoolSetting("hide-dup", "Hide When Duplicated", true).description("Stay hidden while the draggable Potion Timers HUD element is already showing this.").build());
       this.add(new BoolSetting("infinite", "Show Infinite", true).description("Show effects that never expire (beacon, etc.).").build());
       this.add(new ColorSetting("c-bg", "Background", -1879048192).group("Colors").description("Panel backing. 0 alpha removes it.").build());
       this.add(new ColorSetting("c-text", "Text", -1).group("Colors").build());
@@ -40,7 +41,7 @@ public final class PotionHudModule extends Module {
 
    public static void render(GuiGraphicsExtractor var0) {
       PotionHudModule var1 = instance();
-      if (var1 != null && var1.isEnabled() && !PackHideState.isActive()) {
+      if (var1 != null && var1.isEnabled() && !PackHideState.isActive() && !HudDuplicate.suppresses(var1, "potion_timers")) {
          if (MC != null && MC.player != null && !MC.gui.hud.isHidden()) {
             try {
                var1.draw(var0);
