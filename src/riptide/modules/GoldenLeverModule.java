@@ -61,8 +61,14 @@ public final class GoldenLeverModule extends Module {
       femaleBodyPlayerNames = Set.of();
    }
 
+   @Override
+   public boolean showInModuleMenu() {
+      // Removed from the client: hidden from the menu and inert (see isActive()).
+      return false;
+   }
+
    public static boolean isStylingActive() {
-      return active;
+      return false;
    }
 
    public static boolean isFemaleBodyActive() {
@@ -148,6 +154,8 @@ public final class GoldenLeverModule extends Module {
    }
 
    private static boolean isActive() {
-      return active;
+      // Hard-off: the module is removed, so lever styling never applies even if a
+      // stale config marks it enabled. The class stays only for the mixins that call in.
+      return false;
    }
 }
