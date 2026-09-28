@@ -20,7 +20,7 @@ public final class ArmorHudModule extends Module {
    public ArmorHudModule() {
       super("armor-hud", "Armor HUD", ModuleCategory.RENDER, "Lists your armour and held items with durability.");
       this.add(
-         new ChoiceSetting("corner", "Corner", "Top Right", "Top Left", "Top Right", "Bottom Left", "Bottom Right")
+         new ChoiceSetting("corner", "Corner", "Bottom Right", "Top Left", "Top Right", "Bottom Left", "Bottom Right")
             .description("Which corner the list sits in.")
             .build()
       );
@@ -94,10 +94,9 @@ public final class ArmorHudModule extends Module {
          int var27 = var25 + var23 * 2;
          int var29 = var4.size() * var24 + var23 * 2 - 1;
          boolean var12 = this.choice("corner").contains("Right");
-         boolean var13 = this.choice("corner").contains("Bottom");
          int var14 = this.integer("margin");
          int var15 = var12 ? var1.guiWidth() - var14 - var27 : var14;
-         int var16 = var13 ? var1.guiHeight() - var14 - var29 : var14;
+         int var16 = HudStack.y(this.choice("corner"), var14, var29, var1.guiHeight());
          int var17 = ModuleRenderUtil.color(this, "c-bg", -1879048192);
          int var18 = ModuleRenderUtil.color(this, "c-text", -1) | 0xFF000000;
          int var19 = ModuleRenderUtil.color(this, "c-low", -2080722) | 0xFF000000;

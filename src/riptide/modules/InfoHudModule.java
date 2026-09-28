@@ -125,7 +125,7 @@ public final class InfoHudModule extends Module {
          int var11 = var1.guiWidth();
          int var12 = var1.guiHeight();
          int var13 = var9.contains("Right") ? var11 - var10 - var27 : var10;
-         int var14 = var9.contains("Bottom") ? var12 - var10 - var28 : var10;
+         int var14 = HudStack.y(var9, var10, var28, var12);
          int var15 = ModuleRenderUtil.color(this, "c-bg", -1879048192);
          int var16 = ModuleRenderUtil.color(this, "c-text", -1) | 0xFF000000;
          if (var15 >>> 24 != 0) {

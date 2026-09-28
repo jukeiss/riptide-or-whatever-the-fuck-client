@@ -60,10 +60,9 @@ public final class RadarHudModule extends Module {
    private void draw(GuiGraphicsExtractor var1) {
       int var2 = this.integer("size");
       boolean var3 = this.choice("corner").contains("Right");
-      boolean var4 = this.choice("corner").contains("Bottom");
       int var5 = this.integer("margin");
       int var6 = var3 ? var1.guiWidth() - var5 - var2 : var5;
-      int var7 = var4 ? var1.guiHeight() - var5 - var2 : var5;
+      int var7 = HudStack.y(this.choice("corner"), var5, var2, var1.guiHeight());
       int var8 = var6 + var2 / 2;
       int var9 = var7 + var2 / 2;
       int var10 = ModuleRenderUtil.color(this, "c-bg", -1609559016);

@@ -19,7 +19,7 @@ public final class CpsHudModule extends Module {
    public CpsHudModule() {
       super("cps-hud", "CPS", ModuleCategory.RENDER, "Shows your left/right clicks per second.");
       this.add(
-         new ChoiceSetting("corner", "Corner", "Bottom Left", "Top Left", "Top Right", "Bottom Left", "Bottom Right")
+         new ChoiceSetting("corner", "Corner", "Top Left", "Top Left", "Top Right", "Bottom Left", "Bottom Right")
             .description("Which corner the counter sits in.")
             .build()
       );
@@ -83,10 +83,9 @@ public final class CpsHudModule extends Module {
       int var5 = var2.width(var3) + var4 * 2;
       int var6 = 9 + var4 * 2;
       boolean var7 = this.choice("corner").contains("Right");
-      boolean var8 = this.choice("corner").contains("Bottom");
       int var9 = this.integer("margin");
       int var10 = var7 ? var1.guiWidth() - var9 - var5 : var9;
-      int var11 = var8 ? var1.guiHeight() - var9 - var6 : var9;
+      int var11 = HudStack.y(this.choice("corner"), var9, var6, var1.guiHeight());
       int var12 = ModuleRenderUtil.color(this, "c-bg", -1879048192);
       int var13 = ModuleRenderUtil.color(this, "c-text", -1) | 0xFF000000;
       if (var12 >>> 24 != 0) {

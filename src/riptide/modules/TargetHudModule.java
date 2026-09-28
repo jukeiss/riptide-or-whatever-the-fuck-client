@@ -81,10 +81,10 @@ public final class TargetHudModule extends Module {
             var16 = var14 - var12 - var10;
          } else if (var11.equals("Top Right")) {
             var15 = var13 - var12 - var7;
-            var16 = var12;
+            var16 = HudStack.y(var11, var12, var10, var14);
          } else {
             var15 = var12;
-            var16 = var12;
+            var16 = HudStack.y(var11, var12, var10, var14);
          }
 
          int var17 = ModuleRenderUtil.color(this, "c-bg", -1072688104);

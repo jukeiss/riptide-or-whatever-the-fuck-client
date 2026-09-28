@@ -100,10 +100,9 @@ public final class PvpCountHudModule extends Module {
          int var28 = var13 + var11 * 2;
          int var29 = var8.size() * var12 + var11 * 2 - 1;
          boolean var16 = this.choice("corner").contains("Right");
-         boolean var17 = this.choice("corner").contains("Bottom");
          int var18 = this.integer("margin");
          int var19 = var16 ? var1.guiWidth() - var18 - var28 : var18;
-         int var20 = var17 ? var1.guiHeight() - var18 - var29 : var18;
+         int var20 = HudStack.y(this.choice("corner"), var18, var29, var1.guiHeight());
          int var21 = ModuleRenderUtil.color(this, "c-bg", -1879048192);
          int var22 = ModuleRenderUtil.color(this, "c-text", -1) | 0xFF000000;
          int var23 = ModuleRenderUtil.color(this, "c-low", -2080722) | 0xFF000000;

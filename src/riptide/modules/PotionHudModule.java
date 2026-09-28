@@ -80,10 +80,9 @@ public final class PotionHudModule extends Module {
          int var25 = var23 + var21 * 2;
          int var26 = var3.size() * var22 + var21 * 2 - 1;
          boolean var10 = this.choice("corner").contains("Right");
-         boolean var11 = this.choice("corner").contains("Bottom");
          int var12 = this.integer("margin");
          int var13 = var10 ? var1.guiWidth() - var12 - var25 : var12;
-         int var14 = var11 ? var1.guiHeight() - var12 - var26 : var12;
+         int var14 = HudStack.y(this.choice("corner"), var12, var26, var1.guiHeight());
          int var15 = ModuleRenderUtil.color(this, "c-bg", -1879048192);
          int var16 = ModuleRenderUtil.color(this, "c-text", -1) | 0xFF000000;
          if (var15 >>> 24 != 0) {

@@ -14,7 +14,7 @@ public final class KeystrokesHudModule extends Module {
    public KeystrokesHudModule() {
       super("keystrokes", "Keystrokes", ModuleCategory.RENDER, "Shows your WASD, mouse buttons and jump as they're pressed.");
       this.add(
-         new ChoiceSetting("corner", "Corner", "Bottom Left", "Top Left", "Top Right", "Bottom Left", "Bottom Right")
+         new ChoiceSetting("corner", "Corner", "Top Left", "Top Left", "Top Right", "Bottom Left", "Bottom Right")
             .description("Which corner the block sits in.")
             .build()
       );
@@ -54,12 +54,11 @@ public final class KeystrokesHudModule extends Module {
       int var4 = var2 * 3 + var3 * 2;
       int var5 = var2 * 3 + var3 * 2 + var2 / 2 + var3;
       boolean var6 = this.choice("corner").contains("Right");
-      boolean var7 = this.choice("corner").contains("Bottom");
       int var8 = this.integer("margin");
       int var9 = var1.guiWidth();
       int var10 = var1.guiHeight();
       int var11 = var6 ? var9 - var8 - var4 : var8;
-      int var12 = var7 ? var10 - var8 - var5 : var8;
+      int var12 = HudStack.y(this.choice("corner"), var8, var5, var10);
       this.key(var1, var11 + var2 + var3, var12, var2, var2, "W", MC.options.keyUp);
       this.key(var1, var11, var12 + var2 + var3, var2, var2, "A", MC.options.keyLeft);
       this.key(var1, var11 + var2 + var3, var12 + var2 + var3, var2, var2, "S", MC.options.keyDown);

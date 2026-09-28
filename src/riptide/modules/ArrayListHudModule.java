@@ -63,13 +63,12 @@ public final class ArrayListHudModule extends Module {
       if (!var3.isEmpty()) {
          var3.sort((var1x, var2x) -> var2.width(var2x) - var2.width(var1x));
          boolean var26 = this.choice("corner").contains("Right");
-         boolean var27 = this.choice("corner").contains("Bottom");
          int var7 = this.integer("margin");
          int var8 = var1.guiWidth();
          int var9 = var1.guiHeight();
          byte var10 = 11;
          int var11 = var3.size() * var10;
-         int var12 = var27 ? var9 - var7 - var11 : var7;
+         int var12 = HudStack.y(this.choice("corner"), var7, var11, var9);
          boolean var13 = this.bool("rainbow");
          int var14 = ModuleRenderUtil.color(this, "c-text", -1) | 0xFF000000;
          int var15 = ModuleRenderUtil.color(this, "c-tab", -11890433) | 0xFF000000;
