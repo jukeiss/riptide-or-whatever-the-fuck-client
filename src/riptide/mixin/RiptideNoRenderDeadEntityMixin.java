@@ -1,0 +1,29 @@
+package riptide.mixin;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import riptide.modules.NoRenderState;
+
+@Mixin({LivingEntityRenderer.class})
+public abstract class RiptideNoRenderDeadEntityMixin {
+   @Inject(
+      method = {"submit"},
+      at = {@At("HEAD")},
+      cancellable = true,
+      require = 0
+   )
+   private void riptide$noDeadEntity(
+      LivingEntityRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState cameraState, CallbackInfo ci
+   ) {
+      if (state != null && state.deathTime > 0.0F && NoRenderState.noDeadEntities()) {
+         ci.cancel();
+      }
+   }
+}
