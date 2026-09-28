@@ -10,11 +10,47 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------- paths
-ROOT="/Users/danielbanana/Library/Application Support/Claude/scratch-workspaces/9546dd0c-ad87-4cbc-a7f5-b2014b339b8a/37c59968-2e61-4ca6-8f30-6d9788486710/scratch-2026-09-11-95d621"
-JDK="/Users/danielbanana/Library/Application Support/PrismLauncher/java/java-runtime-epsilon/bin"
-PRISM_LIBS="/Users/danielbanana/Library/Application Support/PrismLauncher/libraries"
+# ROOT is the workspace holding build/, cp/, tools/, fapi/ and the jars. You
+# rename/move folders, so instead of a hard-coded path this auto-finds it:
+#   1. $RIPTIDE_ROOT if you set it,   2. the script's own folder if it qualifies,
+#   3. the newest scratch-* under Claude's scratch-workspaces that has build/ + a jar.
+# A workspace "qualifies" when it has build/riptide.mixins.json and cp/compile.cp.
+qualifies() { [ -f "$1/build/riptide.mixins.json" ] && [ -f "$1/cp/compile.cp" ]; }
 
-SRC="$ROOT/src"          # the tree from this session's zip / the git branch
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+ROOT=""
+if [ -n "${RIPTIDE_ROOT:-}" ] && qualifies "$RIPTIDE_ROOT"; then
+  ROOT="$RIPTIDE_ROOT"
+elif qualifies "$SCRIPT_DIR"; then
+  ROOT="$SCRIPT_DIR"
+else
+  SCRATCH="$HOME/Library/Application Support/Claude/scratch-workspaces"
+  # newest first (-t), take the first candidate that qualifies
+  while IFS= read -r cand; do
+    [ -n "$cand" ] || continue
+    if qualifies "$cand"; then ROOT="$cand"; break; fi
+  done < <(ls -dt "$SCRATCH"/*/*/scratch-* 2>/dev/null)
+fi
+if [ -z "$ROOT" ]; then
+  echo "Could not find your Riptide workspace (a folder with build/ and cp/)." >&2
+  echo "Set it explicitly and re-run, e.g.:" >&2
+  echo '  RIPTIDE_ROOT="/path/to/scratch-2026-...-XXXXXX" bash build-riptide.sh' >&2
+  exit 1
+fi
+echo "==> workspace: $ROOT"
+
+JDK="$HOME/Library/Application Support/PrismLauncher/java/java-runtime-epsilon/bin"
+PRISM_LIBS="$HOME/Library/Application Support/PrismLauncher/libraries"
+
+# Source: prefer a src/ sitting next to this script (i.e. you ran it straight
+# from the git clone, which has this session's new files), else the workspace's
+# own src/. This is why running from the clone "just works" without a copy step.
+if [ -f "$SCRIPT_DIR/src/riptide/modules/SoundRadarModule.java" ]; then
+  SRC="$SCRIPT_DIR/src"
+else
+  SRC="$ROOT/src"
+fi
+echo "==> source:    $SRC"
 BUILD="$ROOT/build"
 TOOLS="$ROOT/tools"
 CP="$ROOT/cp"
