@@ -21,7 +21,10 @@ import riptide.util.RiptideClientMessaging;
 import riptide.util.RiptidePlayerScanner;
 
 public final class StaffListModule extends Module {
-   private static final String DEFAULT_RANKS = "owner, co-owner, admin, sr-admin, manager, developer, dev, sr-mod, mod, moderator, jr-mod, helper, trainee, staff, support, builder";
+   // DonutSMP's staff tiers up top, with common variants, then a generic tail for other servers.
+   private static final String DEFAULT_RANKS = "owner, co-owner, manager, admin, sr-admin, developer, dev, head-mod, sr-mod, mod, moderator, jr-mod, trial-mod, helper, trainee, staff, support, media, builder";
+   // The subset that counts as "admin and up" - the people this list is really for.
+   private static final String DEFAULT_ADMIN_RANKS = "owner, co-owner, manager, admin, sr-admin, developer, dev";
    // Small-caps and other "fancy" letters servers use for rank tags, mapped back to ASCII.
    private static final String FANCY = "ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡʏᴢ";
    private static final String PLAIN = "abcdefghijklmnopqrstuvwyz";
@@ -39,6 +42,18 @@ public final class StaffListModule extends Module {
             .build()
       );
       this.add(
+         new StringListSetting("admin-ranks", "Admin Ranks", DEFAULT_ADMIN_RANKS)
+            .description("Which of the ranks above count as admin and up. These get their own colour and sort to the top.")
+            .group("Detection")
+            .build()
+      );
+      this.add(
+         new BoolSetting("admins-only", "Admins Only", false)
+            .description("Show and alert for admins and up only, not lower staff.")
+            .group("Detection")
+            .build()
+      );
+      this.add(
          new StringListSetting("names", "Always Staff", "")
             .description("Players to treat as staff no matter their prefix (for servers that use icon ranks).")
             .playerNameList()
@@ -46,6 +61,7 @@ public final class StaffListModule extends Module {
             .build()
       );
       this.add(new BoolSetting("hud", "Show Panel", true).description("Draw the list on screen.").group("Display").build());
+      this.add(new BoolSetting("highlight-self", "Highlight Me", true).description("Draw your own name in the highlight colour.").group("Display").build());
       this.add(new BoolSetting("show-rank", "Show Rank", true).description("Show each staff member's rank next to their name.").group("Display").build());
       this.add(new BoolSetting("hide-empty", "Hide When None", false).description("Hide the panel when no staff are online.").group("Display").build());
       this.add(
@@ -60,8 +76,23 @@ public final class StaffListModule extends Module {
       this.add(new BoolSetting("sound", "Play Sound", true).description("Ping when staff come online.").group("Alerts").build());
       this.add(new ColorSetting("c-bg", "Background", -1879048192).group("Colors").description("Panel backing. 0 alpha removes it.").build());
       this.add(new ColorSetting("c-title", "Title", -43691).group("Colors").build());
-      this.add(new ColorSetting("c-text", "Name", -1).group("Colors").build());
+      this.add(new ColorSetting("c-admin", "Admin Name", -22016).group("Colors").description("Colour for admins and up.").build());
+      this.add(new ColorSetting("c-text", "Staff Name", -1).group("Colors").build());
+      this.add(new ColorSetting("c-self", "Your Name", -11141291).group("Colors").build());
       this.add(new ColorSetting("c-rank", "Rank", -4602154).group("Colors").build());
+   }
+
+   private Set<String> adminRankSet() {
+      Set<String> admins = new HashSet<>();
+
+      for (String rank : this.list("admin-ranks")) {
+         String normalized = normalize(rank).trim();
+         if (!normalized.isEmpty()) {
+            admins.add(normalized);
+         }
+      }
+
+      return admins;
    }
 
    private static StaffListModule instance() {
@@ -160,12 +191,18 @@ public final class StaffListModule extends Module {
          }
       }
 
+      boolean adminsOnly = this.bool("admins-only");
+      Set<String> adminRanks = adminsOnly ? this.adminRankSet() : null;
       Map<String, String> found = new LinkedHashMap<>();
 
       for (RiptidePlayerScanner.ScannedPlayer player : RiptidePlayerScanner.scan(MC)) {
          String prefix = player.prefix() == null ? "" : player.prefix().trim();
-         if (forced.contains(player.name().toLowerCase(Locale.ROOT)) || isStaffRank(prefix, ranks)) {
-            found.put(player.name(), prefix);
+         boolean forcedStaff = forced.contains(player.name().toLowerCase(Locale.ROOT));
+         if (forcedStaff || isStaffRank(prefix, ranks)) {
+            // Admins-only still keeps a forced name, since that is how icon-rank admins get listed.
+            if (!adminsOnly || forcedStaff || isStaffRank(prefix, adminRanks)) {
+               found.put(player.name(), prefix);
+            }
          }
       }
 
@@ -229,8 +266,25 @@ public final class StaffListModule extends Module {
       if (!this.online.isEmpty() || !this.bool("hide-empty")) {
          Font font = MC.font;
          boolean showRank = this.bool("show-rank");
+         Set<String> adminRanks = this.adminRankSet();
+         String self = MC.player != null && MC.player.getGameProfile() != null ? MC.player.getGameProfile().name() : null;
+
+         // Admins first, then remaining staff, each group alphabetical.
          List<String> names = new ArrayList<>(this.online.keySet());
-         String title = "Staff (" + names.size() + ")";
+         names.sort((a, b) -> {
+            boolean adminA = isStaffRank(this.online.get(a), adminRanks);
+            boolean adminB = isStaffRank(this.online.get(b), adminRanks);
+            return adminA != adminB ? (adminA ? -1 : 1) : a.compareToIgnoreCase(b);
+         });
+
+         int adminCount = 0;
+         for (String name : names) {
+            if (isStaffRank(this.online.get(name), adminRanks)) {
+               adminCount++;
+            }
+         }
+
+         String title = adminCount > 0 ? "Staff (" + adminCount + " admin / " + names.size() + ")" : "Staff (" + names.size() + ")";
          int pad = 3;
          int lineHeight = 10;
          int width = font.width(title);
@@ -248,8 +302,11 @@ public final class StaffListModule extends Module {
          int y = HudStack.y(corner, margin, panelH, graphics.guiHeight());
          int bg = ModuleRenderUtil.color(this, "c-bg", -1879048192);
          int titleColor = ModuleRenderUtil.color(this, "c-title", -43691) | 0xFF000000;
-         int nameColor = ModuleRenderUtil.color(this, "c-text", -1) | 0xFF000000;
+         int adminColor = ModuleRenderUtil.color(this, "c-admin", -22016) | 0xFF000000;
+         int staffColor = ModuleRenderUtil.color(this, "c-text", -1) | 0xFF000000;
+         int selfColor = ModuleRenderUtil.color(this, "c-self", -11141291) | 0xFF000000;
          int rankColor = ModuleRenderUtil.color(this, "c-rank", -4602154) | 0xFF000000;
+         boolean highlightSelf = this.bool("highlight-self");
          if (bg >>> 24 != 0) {
             graphics.fill(x, y, x + panelW, y + panelH, bg);
          }
@@ -259,6 +316,9 @@ public final class StaffListModule extends Module {
 
          for (String name : names) {
             lineY += lineHeight;
+            int nameColor = highlightSelf && name.equalsIgnoreCase(self)
+               ? selfColor
+               : (isStaffRank(this.online.get(name), adminRanks) ? adminColor : staffColor);
             graphics.text(font, Component.literal(name), x + pad, lineY, nameColor);
             String rank = this.online.get(name);
             if (showRank && !rank.isEmpty()) {
