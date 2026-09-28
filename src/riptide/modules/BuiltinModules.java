@@ -290,6 +290,11 @@ public final class BuiltinModules {
          ModuleRegistry.register(new HitboxModule());
          ModuleRegistry.register(new CoordSnapperModule());
          ModuleRegistry.register(new WeatherNotifierModule());
+         ModuleRegistry.register(new StaffListModule());
+         ModuleRegistry.register(new CustomFovModule());
+         ModuleRegistry.register(new HitParticlesModule());
+         ModuleRegistry.register(new ArmorTrimHiderModule());
+         ModuleRegistry.register(new CustomGlintModule());
          ModuleRegistry.register(new RegionMapModule());
          ModuleRegistry.register(new PlayerArmorEspModule());
          ModuleRegistry.register(new FreeLookZoomModule());

@@ -1,0 +1,16 @@
+-encoding
+UTF-8
+-proc:none
+-implicit:none
+-sourcepath
+.
+-d
+/tmp/claude-0/-home-user-riptide-or-whatever-the-fuck-client/1af8fab0-c7a0-5572-94dd-a25589270383/scratchpad/tc
+-Xmaxerrs
+100000
+riptide/modules/StaffListModule.java
+riptide/modules/CustomFovModule.java
+riptide/modules/HitParticlesModule.java
+riptide/modules/ArmorTrimHiderModule.java
+riptide/modules/CustomGlintModule.java
+riptide/modules/HudStack.java
