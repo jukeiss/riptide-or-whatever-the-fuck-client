@@ -86,6 +86,7 @@ echo "==> compiling modules + util"
   "$SRC"/riptide/modules/CustomGlintModule.java \
   "$SRC"/riptide/modules/FakePayModule.java \
   "$SRC"/riptide/modules/HitParticlesModule.java \
+  "$SRC"/riptide/modules/GoldenLeverModule.java \
   "$SRC"/riptide/modules/HudDuplicate.java \
   "$SRC"/riptide/modules/HudStack.java \
   "$SRC"/riptide/modules/InfoHudModule.java \
