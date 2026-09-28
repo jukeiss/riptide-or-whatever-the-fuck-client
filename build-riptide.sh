@@ -1,0 +1,161 @@
+#!/bin/bash
+# Build this session's Riptide changes into the readable jar.
+#
+#   bash build-riptide.sh            compile + register + LinkTest + update the readable jar
+#   bash build-riptide.sh --obf      the above, then the obfuscated jar too
+#
+# Stops at the first failure. Nothing is written to the jars until LinkTest
+# reports 0 VERIFY BUGS, so a failed run leaves your shippable jars untouched.
+
+set -euo pipefail
+
+# ---------------------------------------------------------------- paths
+ROOT="/Users/danielbanana/Library/Application Support/Claude/scratch-workspaces/9546dd0c-ad87-4cbc-a7f5-b2014b339b8a/37c59968-2e61-4ca6-8f30-6d9788486710/scratch-2026-09-11-95d621"
+JDK="/Users/danielbanana/Library/Application Support/PrismLauncher/java/java-runtime-epsilon/bin"
+PRISM_LIBS="/Users/danielbanana/Library/Application Support/PrismLauncher/libraries"
+
+SRC="$ROOT/src"          # the tree from this session's zip / the git branch
+BUILD="$ROOT/build"
+TOOLS="$ROOT/tools"
+CP="$ROOT/cp"
+JAR="$ROOT/Riptide Client-5.0-26.2.jar"
+OBF_JAR="$ROOT/Riptide Client-5.0-26.2-obf.jar"
+
+JAVAC="$JDK/javac"
+JAVA="$JDK/java"
+T25=/tmp/tools25
+OUT=/tmp/riptide-out
+
+for p in "$ROOT" "$SRC" "$BUILD" "$TOOLS" "$CP" "$JAVAC" "$JAVA"; do
+  [ -e "$p" ] || { echo "MISSING: $p" >&2; exit 1; }
+done
+
+FAPI=$(find "$ROOT/fapi/META-INF/jars" -name '*.jar' | tr '\n' ':')
+LIBS=$(find "$PRISM_LIBS" -name '*.jar' | tr '\n' ':')
+CP_COMPILE="$BUILD:$(cat "$CP/compile.cp"):$FAPI"
+CP_MIXIN="$BUILD:$(cat "$CP/compile3.cp"):$FAPI"
+
+rm -rf "$OUT" && mkdir -p "$OUT" "$T25"
+
+# ------------------------------------------------------- 1. plain classes
+# BuiltinModules.java is deliberately NOT here: it is decompiler output, and
+# step 3 patches the existing .class with AddRegister instead of recompiling it.
+echo "==> compiling modules + util"
+"$JAVAC" --release 25 -nowarn -cp "$CP_COMPILE" -d "$OUT" \
+  "$SRC"/riptide/modules/ArmorHudModule.java \
+  "$SRC"/riptide/modules/ArmorTrimHiderModule.java \
+  "$SRC"/riptide/modules/ArrayListHudModule.java \
+  "$SRC"/riptide/modules/CpsHudModule.java \
+  "$SRC"/riptide/modules/CustomFovModule.java \
+  "$SRC"/riptide/modules/CustomGlintModule.java \
+  "$SRC"/riptide/modules/FakePayModule.java \
+  "$SRC"/riptide/modules/HitParticlesModule.java \
+  "$SRC"/riptide/modules/HudDuplicate.java \
+  "$SRC"/riptide/modules/HudStack.java \
+  "$SRC"/riptide/modules/InfoHudModule.java \
+  "$SRC"/riptide/modules/KeystrokesHudModule.java \
+  "$SRC"/riptide/modules/KillEffectsModule.java \
+  "$SRC"/riptide/modules/PlayerArmorEspModule.java \
+  "$SRC"/riptide/modules/PotionHudModule.java \
+  "$SRC"/riptide/modules/PvpCountHudModule.java \
+  "$SRC"/riptide/modules/RadarHudModule.java \
+  "$SRC"/riptide/modules/SoundRadarModule.java \
+  "$SRC"/riptide/modules/SpawnerProtectModule.java \
+  "$SRC"/riptide/modules/SpotifyModule.java \
+  "$SRC"/riptide/modules/StaffListModule.java \
+  "$SRC"/riptide/modules/TargetHudModule.java \
+  "$SRC"/riptide/util/RiptideFakeScoreboard.java \
+  "$SRC"/riptide/util/RiptideSpotify.java
+
+# ------------------------------------------------------------ 2. mixins
+echo "==> compiling mixins"
+"$JAVAC" --release 25 -nowarn -cp "$CP_MIXIN" -d "$OUT" \
+  "$SRC"/riptide/mixin/RiptideArmorTrimHiderMixin.java \
+  "$SRC"/riptide/mixin/RiptideCameraZoomMixin.java \
+  "$SRC"/riptide/mixin/RiptideHudSuiteMixin.java
+
+echo "==> copying classes into build/"
+( cd "$OUT" && find . -name '*.class' -print0 | while IFS= read -r -d '' f; do
+    mkdir -p "$BUILD/$(dirname "$f")"
+    cp "$f" "$BUILD/$f"
+  done )
+
+# -------------------------------------------------- 3. register modules
+echo "==> recompiling ASM tools with JDK 25"
+"$JAVAC" --release 25 -nowarn -cp "$(cat "$CP/asm.cp")" -d "$T25" \
+  "$TOOLS"/AddRegister.java "$TOOLS"/LinkTest.java
+
+echo "==> registering the 9 new modules"
+"$JAVA" -cp "$T25:$(cat "$CP/asm.cp")" AddRegister \
+  "$BUILD/riptide/modules/BuiltinModules.class" riptide/modules/WatermarkModule \
+  riptide/modules/StaffListModule \
+  riptide/modules/CustomFovModule \
+  riptide/modules/HitParticlesModule \
+  riptide/modules/ArmorTrimHiderModule \
+  riptide/modules/CustomGlintModule \
+  riptide/modules/FakePayModule \
+  riptide/modules/SpawnerProtectModule \
+  riptide/modules/KillEffectsModule \
+  riptide/modules/SoundRadarModule
+
+# --------------------------------------------- 4. register the new mixin
+MIXJSON="$BUILD/riptide.mixins.json"
+if grep -q 'RiptideArmorTrimHiderMixin' "$MIXJSON"; then
+  echo "==> mixin already registered"
+else
+  echo "==> adding RiptideArmorTrimHiderMixin to riptide.mixins.json"
+  cp "$MIXJSON" "$MIXJSON.bak"
+  python3 - "$MIXJSON" <<'PY'
+import json, sys
+path = sys.argv[1]
+with open(path) as fh:
+    data = json.load(fh)
+client = data.setdefault("client", [])
+if "RiptideArmorTrimHiderMixin" not in client:
+    client.append("RiptideArmorTrimHiderMixin")
+    client.sort()
+with open(path, "w") as fh:
+    json.dump(data, fh, indent=2)
+    fh.write("\n")
+PY
+fi
+
+# ------------------------------------------------------------ 5. verify
+echo "==> LinkTest (must report 0 VERIFY BUGS)"
+"$JAVA" -cp "$T25:$(cat "$CP/asm.cp")" LinkTest \
+  "$BUILD:$(cat "$CP/compile.cp"):$FAPI:$LIBS" "$BUILD" | tee /tmp/riptide-linktest.txt
+grep -qE '\b0 VERIFY BUGS\b' /tmp/riptide-linktest.txt \
+  || { echo "LinkTest found problems - jars NOT touched. See /tmp/riptide-linktest.txt" >&2; exit 1; }
+
+# ----------------------------------------------------- 6. readable jar
+echo "==> updating $(basename "$JAR")"
+cp "$JAR" "$JAR.bak"
+( cd "$BUILD" && jar uf "$JAR" riptide riptide.mixins.json )
+echo "OK: $JAR"
+
+# --------------------------------------------------- 7. obfuscated jar
+if [ "${1:-}" = "--obf" ]; then
+  echo "==> obfuscating"
+  rm -rf /tmp/ob
+  "$JAVAC" --release 25 -nowarn -cp "$(cat "$CP/asm.cp")" -d "$T25" \
+    "$TOOLS"/Obf.java "$TOOLS"/EncryptStrings.java
+  "$JAVA" -cp "$T25:$(cat "$CP/asm.cp")" Obf "$BUILD" /tmp/ob
+  mkdir -p /tmp/ob/riptide/util
+  cp "$TOOLS"/riptide/util/RiptideStrings.class /tmp/ob/riptide/util/
+  "$JAVA" -cp "$T25:$(cat "$CP/asm.cp")" EncryptStrings /tmp/ob \
+    riptide/util/RiptideStrings riptide/mixin/RiptideMixinPlugin riptide/util/RiptideStrings
+  "$JAVA" -cp "$T25:$(cat "$CP/asm.cp")" LinkTest \
+    "/tmp/ob:$(cat "$CP/compile.cp"):$FAPI:$LIBS" /tmp/ob | tee /tmp/riptide-linktest-obf.txt
+  grep -qE '\b0 VERIFY BUGS\b' /tmp/riptide-linktest-obf.txt \
+    || { echo "Obfuscated LinkTest failed - obf jar NOT rebuilt." >&2; exit 1; }
+  cp "$OBF_JAR" "$OBF_JAR.bak"
+  ( cd /tmp/ob && jar --create --no-manifest --file "$OBF_JAR" . )
+  echo "OK: $OBF_JAR"
+fi
+
+echo
+echo "Done. Test in-game before shipping:"
+echo "  - Spotify card fills in (and if not, its module line now names the reason)"
+echo "  - no doubled Keystrokes / module list / CPS / armour / potions"
+echo "  - Sound Radar bottom-right, clear of chat; PlayerESP+ panels track players"
+echo "  - Custom Glint recolours item AND armour glint; trims vanish with Armor Trim Hider"
