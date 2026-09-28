@@ -41,6 +41,7 @@ public final class RegionMapModule extends Module {
       this.add(new BoolSetting("numbers", "Show Numbers", true).description("Draw each region's number in its cell.").build());
       this.add(new BoolSetting("heading", "Show Heading", true).description("Draw an arrow for the way you're facing on your region.").build());
       this.add(new BoolSetting("header", "Show Current Region", true).description("Label the region you're in above the map.").build());
+      this.add(new BoolSetting("legend", "Show Legend", true).description("List the datacenter colours below the map.").build());
       this.add(
          new StringSetting(
                "layout",
@@ -164,11 +165,17 @@ public final class RegionMapModule extends Module {
          int var3 = this.integer("cell");
          boolean var4 = this.bool("numbers");
          boolean var5 = this.bool("header");
+         boolean legend = this.bool("legend");
+         String[] dcNames = new String[]{"EU Central", "EU West", "NA East", "NA West", "Asia", "Oceania"};
+         String[] dcIds = new String[]{"c-1", "c-2", "c-3", "c-4", "c-5", "c-6"};
+         int[] dcDefaults = new int[]{-678365, -12933547, -7617718, -10773547, -12291388, -1538514};
+         int legendRow = 10;
+         int legendH = legend ? dcNames.length * legendRow + 4 : 0;
          byte var6 = 4;
          int var7 = 9 * var3;
          int var8 = var5 ? 11 : 0;
          int var9 = var7 + var6 * 2;
-         int var10 = var7 + var6 * 2 + var8;
+         int var10 = var7 + var6 * 2 + var8 + legendH;
          int var11 = this.integer("margin");
          String var12 = this.choice("corner");
          int var13 = var1.guiWidth();
@@ -230,6 +237,17 @@ public final class RegionMapModule extends Module {
             }
 
             var1.text(var2, Component.literal(var34), var22, var16 + var6, var21);
+         }
+
+         if (legend) {
+            int legendY = var23 + var7 + var6;
+
+            for (int i = 0; i < dcNames.length; i++) {
+               int swatch = this.color(dcIds[i], dcDefaults[i]) | 0xFF000000;
+               int rowY = legendY + i * legendRow;
+               var1.fill(var22, rowY, var22 + 7, rowY + 7, swatch);
+               var1.text(var2, Component.literal(dcNames[i]), var22 + 11, rowY, var21);
+            }
          }
       }
    }
