@@ -16,6 +16,7 @@ import riptide.modules.KeystrokesHudModule;
 import riptide.modules.PotionHudModule;
 import riptide.modules.PvpCountHudModule;
 import riptide.modules.RadarHudModule;
+import riptide.modules.SoundRadarModule;
 import riptide.modules.StaffListModule;
 import riptide.modules.TargetHudModule;
 
@@ -37,6 +38,7 @@ public abstract class RiptideHudSuiteMixin {
       PotionHudModule.render(var1);
       PvpCountHudModule.render(var1);
       StaffListModule.render(var1);
+      SoundRadarModule.render(var1);
       TargetHudModule.render(var1);
    }
 }
