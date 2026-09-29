@@ -77,16 +77,42 @@ else
   echo "WARNING: no lwjgl-glfw jar under $PRISM_LIBS - CpsHudModule will not compile." >&2
 fi
 CP_COMPILE="$BUILD:$(cat "$CP/compile.cp"):$FAPI${GLFW_JAR:+:$GLFW_JAR}"
+
 # Mixins use MixinExtras (@WrapOperation / @ModifyReturnValue,
-# com.llamalad7.mixinextras.*), which compile3.cp lacks. It lives in the
-# PrismLauncher libraries, so append LIBS (curated cp wins by coming first).
-CP_MIXIN="$BUILD:$(cat "$CP/compile3.cp"):$FAPI${GLFW_JAR:+:$GLFW_JAR}:$LIBS"
-MIXIN_EXTRAS=$(find "$PRISM_LIBS" \( -name '*mixinextras*.jar' -o -name '*MixinExtras*.jar' \) 2>/dev/null | head -1)
-if [ -n "$MIXIN_EXTRAS" ]; then
+# com.llamalad7.mixinextras.*). It is NOT in compile3.cp, and on modern Fabric
+# it is nested inside fabric-loader.jar (jar-in-jar), which javac cannot read.
+# Find a jar that actually contains the WrapOperation class - standalone, or
+# extracted from fabric-loader's META-INF/jars - and put that on the mixin cp.
+ME_MARK="com/llamalad7/mixinextras/injector/wrapoperation/WrapOperation.class"
+ME_EXTRACT="$T25/mixinextras"
+MIXIN_EXTRAS=""
+find_me() {
+  local j nested
+  # 1. any jar that directly contains the class (standalone mixinextras, or a
+  #    fabric-loader that shades it un-nested). Check likely names first, then all.
+  for j in $(find "$PRISM_LIBS" \( -iname '*mixinextras*.jar' -o -iname 'fabric-loader*.jar' -o -iname 'sponge*.jar' \) 2>/dev/null) \
+           $(find "$PRISM_LIBS" -name '*.jar' 2>/dev/null); do
+    if unzip -l "$j" 2>/dev/null | grep -q "$ME_MARK"; then MIXIN_EXTRAS="$j"; return 0; fi
+  done
+  # 2. nested jar-in-jar: pull mixinextras out of fabric-loader's META-INF/jars
+  rm -rf "$ME_EXTRACT"; mkdir -p "$ME_EXTRACT"
+  for j in $(find "$PRISM_LIBS" -iname 'fabric-loader*.jar' 2>/dev/null); do
+    nested=$(unzip -Z1 "$j" 2>/dev/null | grep -iE 'META-INF/jars/.*mixinextras.*\.jar' | head -1)
+    if [ -n "$nested" ]; then
+      unzip -o -j "$j" "$nested" -d "$ME_EXTRACT" >/dev/null 2>&1
+      local out; out=$(find "$ME_EXTRACT" -name '*.jar' | head -1)
+      if [ -n "$out" ] && unzip -l "$out" 2>/dev/null | grep -q "$ME_MARK"; then MIXIN_EXTRAS="$out"; return 0; fi
+    fi
+  done
+  return 1
+}
+mkdir -p "$T25"
+if find_me; then
   echo "==> mixinextras: $MIXIN_EXTRAS"
 else
-  echo "==> mixinextras: not found as a standalone jar (expecting it shaded into fabric-loader in LIBS)"
+  echo "WARNING: could not locate MixinExtras (WrapOperation.class) under $PRISM_LIBS - mixins will not compile." >&2
 fi
+CP_MIXIN="$BUILD:$(cat "$CP/compile3.cp"):$FAPI${GLFW_JAR:+:$GLFW_JAR}${MIXIN_EXTRAS:+:$MIXIN_EXTRAS}:$LIBS"
 
 rm -rf "$OUT" && mkdir -p "$OUT" "$T25"
 
