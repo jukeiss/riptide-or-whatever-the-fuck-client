@@ -269,6 +269,24 @@ if [ "${1:-}" = "--obf" ]; then
   echo "OK: $OBF_JAR"
 fi
 
+# ----------------------------------------- 8. copy jar(s) into the ggs folder
+# Override with GGS_DIR="/path/to/ggs" if it lives somewhere unusual (e.g. a
+# renamed Desktop). Otherwise look for a folder named "ggs" in the usual places.
+GGS="${GGS_DIR:-}"
+if [ -z "$GGS" ]; then
+  GGS=$(find "$HOME" "$HOME/Desktop" "$HOME/Downloads" "$HOME/Documents" -maxdepth 1 -type d -iname 'ggs' 2>/dev/null | head -1)
+fi
+if [ -n "$GGS" ] && [ -d "$GGS" ]; then
+  cp "$JAR" "$GGS"/ && echo "==> copied $(basename "$JAR") -> $GGS"
+  if [ "${1:-}" = "--obf" ] && [ -f "$OBF_JAR" ]; then
+    cp "$OBF_JAR" "$GGS"/ && echo "==> copied $(basename "$OBF_JAR") -> $GGS"
+  fi
+else
+  echo "==> no 'ggs' folder found in the usual places. To copy there, re-run as:"
+  echo "      GGS_DIR=\"/path/to/ggs\" bash build-riptide.sh"
+  echo "    The built jar is at: $JAR"
+fi
+
 echo
 echo "Done. Test in-game before shipping:"
 echo "  - Spotify card fills in (and if not, its module line now names the reason)"
