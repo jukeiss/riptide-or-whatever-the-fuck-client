@@ -174,6 +174,33 @@ echo "==> recompiling ASM tools with JDK 25"
 "$JAVAC" --release 25 -nowarn -cp "$(cat "$CP/asm.cp")" -d "$T25" \
   "$TOOLS"/AddRegister.java "$TOOLS"/LinkTest.java
 
+# AddRegister mutates BuiltinModules.class in place and refuses duplicates, so a
+# re-run (or a build/ left dirty by an earlier partial run) fails with
+# "<module> already registered". Restore a pristine BuiltinModules.class first,
+# so every run registers the 9 modules from a clean base. The pristine copy comes
+# from the readable master jar (untouched until a build ships) and is cached.
+BM="$BUILD/riptide/modules/BuiltinModules.class"
+PRISTINE="$CP/BuiltinModules.pristine.class"
+if [ ! -f "$PRISTINE" ]; then
+  TMPBM=$(mktemp -d)
+  if unzip -o -j "$JAR" "riptide/modules/BuiltinModules.class" -d "$TMPBM" >/dev/null 2>&1 && [ -f "$TMPBM/BuiltinModules.class" ]; then
+    if strings "$TMPBM/BuiltinModules.class" | grep -q "StaffListModule"; then
+      echo "ERROR: the master jar's BuiltinModules already contains the new modules, so no pristine" >&2
+      echo "       copy can be derived. Restore the original 'Riptide Client-5.0-26.2.jar' and re-run." >&2
+      rm -rf "$TMPBM"; exit 1
+    fi
+    cp "$TMPBM/BuiltinModules.class" "$PRISTINE"
+    echo "==> cached pristine BuiltinModules.class from the master jar"
+  else
+    echo "WARNING: could not read BuiltinModules.class from $JAR; using build/ as-is (re-runs may fail)." >&2
+  fi
+  rm -rf "$TMPBM"
+fi
+if [ -f "$PRISTINE" ]; then
+  cp "$PRISTINE" "$BM"
+  echo "==> restored pristine BuiltinModules before registering"
+fi
+
 echo "==> registering the 9 new modules"
 "$JAVA" -cp "$T25:$(cat "$CP/asm.cp")" AddRegister \
   "$BUILD/riptide/modules/BuiltinModules.class" riptide/modules/WatermarkModule \
