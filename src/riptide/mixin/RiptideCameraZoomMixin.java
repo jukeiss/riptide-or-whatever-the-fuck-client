@@ -1,19 +1,23 @@
 package riptide.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.client.Camera;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import riptide.modules.CustomFovModule;
 import riptide.modules.ZoomModule;
 
+// Plain Sponge Mixin (no MixinExtras): inject at getFov's RETURN, read the
+// current value and overwrite it with Zoom then Custom FOV applied.
 @Mixin({Camera.class})
 public class RiptideCameraZoomMixin {
-   @ModifyReturnValue(
+   @Inject(
       method = {"getFov"},
-      at = {@At("RETURN")}
+      at = {@At("RETURN")},
+      cancellable = true
    )
-   private float riptide$applyZoom(float var1) {
-      return ZoomModule.apply(CustomFovModule.apply(var1));
+   private void riptide$applyZoom(CallbackInfoReturnable<Float> cir) {
+      cir.setReturnValue(ZoomModule.apply(CustomFovModule.apply(cir.getReturnValueF())));
    }
 }
