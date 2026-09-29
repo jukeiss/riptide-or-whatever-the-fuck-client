@@ -122,7 +122,7 @@ public final class JumpCirclesModule extends Module {
                boolean var10 = var1.bool("grow");
                boolean var11 = var1.bool("glow");
                long var12 = System.currentTimeMillis();
-               ArrayList var14 = new ArrayList<>(var1.rings);
+               ArrayList<JumpCirclesModule.Ring> var14 = new ArrayList<>(var1.rings);
                var0.submitNodeCollector().submitCustomGeometry(var0.poseStack(), RiptideRenderTypes.storageEspLinesSeeThrough(), (var13, var14x) -> {
                   for (JumpCirclesModule.Ring var16 : var14) {
                      double var17 = Math.min(1.0, Math.max(0.0, (double)(var12 - var16.born()) / var7));

@@ -37,7 +37,7 @@ public final class RiptideFakeScoreboard {
    }
 
    private static List<String> lines(Module var0) {
-      ArrayList var1 = new ArrayList(6);
+      ArrayList<String> var1 = new ArrayList<>(6);
 
       for (int var2 = 1; var2 <= 6; var2++) {
          String var3 = var0.value("line" + var2);
@@ -61,7 +61,7 @@ public final class RiptideFakeScoreboard {
             var4 = "";
          }
 
-         List var5 = lines(var1);
+         List<String> var5 = lines(var1);
          if (var4.isBlank() && var5.isEmpty()) {
             return false;
          } else {

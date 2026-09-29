@@ -58,8 +58,8 @@ public final class ArmorHudModule extends Module {
    private void draw(GuiGraphicsExtractor var1) {
       boolean var2 = this.bool("hands");
       boolean var3 = this.bool("percent");
-      ArrayList var4 = new ArrayList();
-      ArrayList var5 = new ArrayList();
+      ArrayList<String> var4 = new ArrayList<>();
+      ArrayList<Boolean> var5 = new ArrayList<>();
 
       for (int var6 = 0; var6 < SLOTS.length && (var6 < 4 || var2); var6++) {
          ItemStack var7 = MC.player.getItemBySlot(SLOTS[var6]);

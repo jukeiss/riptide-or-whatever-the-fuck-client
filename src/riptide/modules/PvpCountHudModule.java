@@ -81,8 +81,8 @@ public final class PvpCountHudModule extends Module {
       }
 
       boolean var27 = this.bool("hide-zero");
-      ArrayList var8 = new ArrayList();
-      ArrayList var9 = new ArrayList();
+      ArrayList<String> var8 = new ArrayList<>();
+      ArrayList<Boolean> var9 = new ArrayList<>();
       addLine(var8, var9, this.bool("totems"), var27, "Totems", var2);
       addLine(var8, var9, this.bool("gapples"), var27, "Gapples", var3);
       addLine(var8, var9, this.bool("pearls"), var27, "Pearls", var4);

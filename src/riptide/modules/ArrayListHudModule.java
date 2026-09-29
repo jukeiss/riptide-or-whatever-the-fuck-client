@@ -52,7 +52,7 @@ public final class ArrayListHudModule extends Module {
 
    private void draw(GuiGraphicsExtractor var1) {
       Font var2 = MC.font;
-      ArrayList var3 = new ArrayList();
+      ArrayList<String> var3 = new ArrayList<>();
       boolean var4 = this.bool("hide-self");
 
       for (Module var6 : ModuleRegistry.activeModules()) {

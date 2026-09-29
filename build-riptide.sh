@@ -68,8 +68,16 @@ done
 
 FAPI=$(find "$ROOT/fapi/META-INF/jars" -name '*.jar' | tr '\n' ':')
 LIBS=$(find "$PRISM_LIBS" -name '*.jar' | tr '\n' ':')
-CP_COMPILE="$BUILD:$(cat "$CP/compile.cp"):$FAPI"
-CP_MIXIN="$BUILD:$(cat "$CP/compile3.cp"):$FAPI"
+# cp/compile.cp has no LWJGL-GLFW, which CpsHudModule (mouse polling) needs. Take the newest
+# non-natives lwjgl-glfw jar from PrismLauncher's libraries.
+GLFW_JAR=$(find "$PRISM_LIBS" -name 'lwjgl-glfw-*.jar' ! -name '*natives*' 2>/dev/null | sort -V | tail -1)
+if [ -n "$GLFW_JAR" ]; then
+  echo "==> glfw:      $GLFW_JAR"
+else
+  echo "WARNING: no lwjgl-glfw jar under $PRISM_LIBS - CpsHudModule will not compile." >&2
+fi
+CP_COMPILE="$BUILD:$(cat "$CP/compile.cp"):$FAPI${GLFW_JAR:+:$GLFW_JAR}"
+CP_MIXIN="$BUILD:$(cat "$CP/compile3.cp"):$FAPI${GLFW_JAR:+:$GLFW_JAR}"
 
 rm -rf "$OUT" && mkdir -p "$OUT" "$T25"
 

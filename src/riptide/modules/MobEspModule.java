@@ -105,7 +105,7 @@ public final class MobEspModule extends Module {
                      boolean var9 = var1.bool("tracer");
                      boolean var10 = var1.bool("name");
                      Vec3 var11 = MC.player.getEyePosition();
-                     ArrayList var12 = new ArrayList();
+                     ArrayList<LivingEntity> var12 = new ArrayList<>();
 
                      for (Entity var14 : MC.level.entitiesForRendering()) {
                         if (var14 instanceof LivingEntity var15

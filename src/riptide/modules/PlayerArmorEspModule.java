@@ -174,7 +174,7 @@ public final class PlayerArmorEspModule extends Module {
 
                for (Player var20 : MC.level.players()) {
                   if (var20 != null && var20.isAlive() && (var20 != MC.player || var7) && !(var20.distanceToSqr(MC.player) > var5)) {
-                     ArrayList var21 = new ArrayList();
+                     ArrayList<Component> var21 = new ArrayList<>();
                      if (var1.bool("compact")) {
                         // Classic PvP tag: armour row on top, then name / health / ping on one line.
                         Component var40 = var1.armorLine(var20);

@@ -61,7 +61,7 @@ public final class InfoHudModule extends Module {
    }
 
    private void draw(GuiGraphicsExtractor var1) {
-      ArrayList var2 = new ArrayList(5);
+      ArrayList<String> var2 = new ArrayList<>(5);
       if (this.bool("fps") && !this.dup("fps")) {
          var2.add("FPS: " + MC.getFps());
       }

@@ -53,7 +53,7 @@ public final class PotionHudModule extends Module {
 
    private void draw(GuiGraphicsExtractor var1) {
       boolean var2 = this.bool("infinite");
-      ArrayList var3 = new ArrayList();
+      ArrayList<String> var3 = new ArrayList<>();
 
       for (MobEffectInstance var5 : MC.player.getActiveEffects()) {
          if (var2 || !var5.isInfiniteDuration()) {

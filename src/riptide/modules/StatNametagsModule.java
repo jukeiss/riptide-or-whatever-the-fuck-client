@@ -288,8 +288,8 @@ public final class StatNametagsModule extends Module {
                            && !(var17.distanceToSqr(MC.player) > var5)) {
                            String var18 = var17.getGameProfile().name();
                            if (var18 != null && !var18.isEmpty()) {
-                              ArrayList var19 = new ArrayList();
-                              ArrayList var20 = new ArrayList();
+                              ArrayList<Component> var19 = new ArrayList<>();
+                              ArrayList<Integer> var20 = new ArrayList<>();
                               if (var1.bool("name-line")) {
                                  String var21 = var1.expand(var1.text("name-text"), var17, var18);
                                  if (!var21.isBlank()) {
