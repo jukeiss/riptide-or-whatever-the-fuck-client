@@ -77,7 +77,16 @@ else
   echo "WARNING: no lwjgl-glfw jar under $PRISM_LIBS - CpsHudModule will not compile." >&2
 fi
 CP_COMPILE="$BUILD:$(cat "$CP/compile.cp"):$FAPI${GLFW_JAR:+:$GLFW_JAR}"
-CP_MIXIN="$BUILD:$(cat "$CP/compile3.cp"):$FAPI${GLFW_JAR:+:$GLFW_JAR}"
+# Mixins use MixinExtras (@WrapOperation / @ModifyReturnValue,
+# com.llamalad7.mixinextras.*), which compile3.cp lacks. It lives in the
+# PrismLauncher libraries, so append LIBS (curated cp wins by coming first).
+CP_MIXIN="$BUILD:$(cat "$CP/compile3.cp"):$FAPI${GLFW_JAR:+:$GLFW_JAR}:$LIBS"
+MIXIN_EXTRAS=$(find "$PRISM_LIBS" \( -name '*mixinextras*.jar' -o -name '*MixinExtras*.jar' \) 2>/dev/null | head -1)
+if [ -n "$MIXIN_EXTRAS" ]; then
+  echo "==> mixinextras: $MIXIN_EXTRAS"
+else
+  echo "==> mixinextras: not found as a standalone jar (expecting it shaded into fabric-loader in LIBS)"
+fi
 
 rm -rf "$OUT" && mkdir -p "$OUT" "$T25"
 
